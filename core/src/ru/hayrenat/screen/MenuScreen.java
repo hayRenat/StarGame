@@ -6,57 +6,53 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import ru.hayrenat.base.BaseScreen;
+import ru.hayrenat.math.Rect;
+import ru.hayrenat.sprite.Background;
+import ru.hayrenat.sprite.Ship;
 
 public class MenuScreen extends BaseScreen {
 
-    private static final float V_LEN = 4f;
-
-    private Texture img;
-    private Texture background;
-    private Vector2 pos;
-    private Vector2 v;
-    private Vector2 touchPos;
-    private Vector2 tmpV;
+    private Ship ship;
+    private Texture backgroundTexture;
+    private Background background;
 
 
     @Override
     public void show() {
         super.show();
-        img = new Texture("badlogic.jpg");
-        background = new Texture("space.png");
-        pos = new Vector2();
-        v = new Vector2();
-        touchPos = new Vector2();
-        tmpV = new Vector2();
+        backgroundTexture = new Texture("space.png");
+        background = new Background(backgroundTexture);
+        ship = new Ship(new Texture("ship.png"));
 
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
+        ship.update(delta);
         ScreenUtils.clear(1, 0, 0, 1);
         batch.begin();
-        batch.draw(background, 0,0);
-        batch.draw(img, pos.x, pos.y);
+        background.draw(batch);
+        ship.draw(batch);
         batch.end();
-        tmpV.set(touchPos);
-        if (tmpV.sub(pos).len() <= v.len()){
-            pos.set(touchPos);
-        } else {
-            pos.add(v);
-        }
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        img.dispose();
+        backgroundTexture.dispose();
     }
 
     @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        touchPos.set(screenX, Gdx.graphics.getHeight() - screenY);
-        v.set(touchPos.cpy().sub(pos)).setLength(V_LEN);
+    public void resize(Rect worldBounds) {
+        super.resize(worldBounds);
+        background.resize(worldBounds);
+        ship.resize(worldBounds);
+    }
+
+    @Override
+    public boolean touchDown(Vector2 touch, int pointer, int button) {
+        ship.touchDown(touch, pointer, button);
         return false;
     }
 }
