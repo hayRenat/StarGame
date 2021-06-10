@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 import ru.hayrenat.base.BaseScreen;
 import ru.hayrenat.math.Rect;
+import ru.hayrenat.pool.BulletPool;
 import ru.hayrenat.sprite.Background;
 import ru.hayrenat.sprite.Ship;
 import ru.hayrenat.sprite.Star;
@@ -20,6 +21,7 @@ public class GameScreen extends BaseScreen {
     private Ship ship;
     private TextureAtlas atlas;
     private Star[] stars;
+    private BulletPool bulletPool;
 
     private Texture backgroundTexture;
     private Background background;
@@ -34,7 +36,8 @@ public class GameScreen extends BaseScreen {
         for (int i = 0; i < stars.length; i++) {
             stars[i] = new Star(atlas);
         }
-        ship = new Ship(atlas);
+        bulletPool = new BulletPool();
+        ship = new Ship(atlas, bulletPool);
 
     }
 
@@ -42,6 +45,7 @@ public class GameScreen extends BaseScreen {
     public void render(float delta) {
         super.render(delta);
         update(delta);
+        freeAllDestroyed();
         draw();
     }
 
@@ -60,6 +64,7 @@ public class GameScreen extends BaseScreen {
         super.dispose();
         backgroundTexture.dispose();
         atlas.dispose();
+        bulletPool.dispose();
     }
 
     private void update(float delta){
@@ -67,6 +72,7 @@ public class GameScreen extends BaseScreen {
             star.update(delta);
         }
         ship.update(delta);
+        bulletPool.updateActiveSprites(delta);
     }
 
     private void draw() {
@@ -77,7 +83,24 @@ public class GameScreen extends BaseScreen {
         for (Star star : stars){
             star.draw(batch);
         }
+        bulletPool.drawActiveSprites(batch);
         batch.end();
+    }
+
+    private void freeAllDestroyed() {
+        bulletPool.freeAllDestroyed();
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        ship.keyDown(keycode);
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        ship.keyUp(keycode);
+        return false;
     }
 
     @Override
@@ -89,13 +112,6 @@ public class GameScreen extends BaseScreen {
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
         ship.touchUp(touch, pointer, button);
-        return false;
-    }
-
-
-    @Override
-    public boolean keyDown(int keycode) {
-        ship.keyDown(keycode);
         return false;
     }
 }
