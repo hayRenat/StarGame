@@ -1,6 +1,8 @@
 package ru.hayrenat.sprite;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -15,9 +17,11 @@ public class Ship extends Sprite {
     private static final float PADDING = 0.03f;
     private static final int INVALID_POINTER = -1;
     private static final float HEIGHT = 0.15f;
+    private static final float SHOOT_INTERVAL = 0.1f;
 
     private final Vector2 v0 = new Vector2(0.5f, 0);
     private final Vector2 v = new Vector2();
+    private float counterTime = 0f;
 
     private boolean pressedLeft;
     private boolean pressedRight;
@@ -27,6 +31,7 @@ public class Ship extends Sprite {
     private TextureRegion bulletRegion;
     private Vector2 bulletV;
     private Vector2 bulletPos;
+    private Sound shoot;
 
     private int leftPointer = INVALID_POINTER;
     private int rightPointer = INVALID_POINTER;
@@ -37,6 +42,7 @@ public class Ship extends Sprite {
         this.bulletRegion = atlas.findRegion("bulletMainShip");
         this.bulletV = new Vector2(0, 0.5f);
         this.bulletPos = new Vector2();
+        this.shoot = Gdx.audio.newSound(Gdx.files.internal("sounds/laser.wav"));
     }
 
     @Override
@@ -75,6 +81,11 @@ public class Ship extends Sprite {
             setLeft(worldBounds.getLeft());
             stop();
         }
+        counterTime += delta;
+        if (counterTime >= SHOOT_INTERVAL) {
+            shoot();
+            counterTime = 0f;
+        }
     }
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
@@ -108,9 +119,9 @@ public class Ship extends Sprite {
                 pressedRight = true;
                 moveRight();
                 break;
-            case Input.Keys.UP:
-                shoot();
-                break;
+//            case Input.Keys.UP:
+//                shoot();
+//                break;
         }
         return false;
     }
@@ -158,6 +169,7 @@ public class Ship extends Sprite {
         Bullet bullet = bulletPool.obtain();
         bulletPos.set(pos.x, pos.y + getHalfHeight());
         bullet.set(this, bulletRegion, bulletPos, bulletV, worldBounds, 1, 0.01f);
+        shoot.play();
     }
 }
 
